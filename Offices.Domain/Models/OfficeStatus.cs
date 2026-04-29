@@ -1,5 +1,4 @@
 ﻿namespace Offices.Domain.Models;
-
 public enum OfficeStatus
 {
     Active = 0,

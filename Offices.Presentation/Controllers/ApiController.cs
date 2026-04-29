@@ -27,6 +27,14 @@ public abstract class ApiController : ControllerBase
         return HandleFailure(result.Error);
     }
 
+    protected IActionResult HandleCreationResult<T>(Result<T> result, string actionName, object location)
+    {
+        if(result.IsSuccess)
+            return CreatedAtAction(actionName, location, result.Value);
+
+        return HandleFailure(result.Error);
+    }
+
     protected IActionResult HandleFailure(Error error)
     {
         var apiResponse = ApiResponse.Failure(error.Message);
