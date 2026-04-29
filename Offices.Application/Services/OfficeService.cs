@@ -1,20 +1,19 @@
 ﻿using Offices.Application.Abstractions;
 using Offices.Application.DTOs;
+using Offices.Application.DTOs.Pagination;
 using Offices.Application.Mappings;
-using Offices.Domain.Models;
 using Offices.Application.Results;
+using Offices.Domain.Models;
 
 namespace Offices.Application.Services;
 
 public class OfficeService : IOfficeService
 {
     private readonly IRepository<Office> _officeRepository;
-    private readonly IUnitOfWork _unitOfWork;
 
-    public OfficeService(IRepository<Office> officeRepository, IUnitOfWork unitOfWork)
+    public OfficeService(IRepository<Office> officeRepository)
     {
         _officeRepository = officeRepository;
-        _unitOfWork = unitOfWork;
     }
 
     public async Task<Result<OfficeResponseDTO>> CreateOfficeAsync(CreateOfficeDto request)
@@ -23,7 +22,6 @@ public class OfficeService : IOfficeService
         office.Id = Guid.NewGuid();
 
         await _officeRepository.AddAsync(office);
-        await _unitOfWork.SaveChangesAsync();
 
         var responseDto = office.ToResponseDTO();
         return Result<OfficeResponseDTO>.Success(responseDto);
@@ -40,13 +38,14 @@ public class OfficeService : IOfficeService
         return Result<OfficeResponseDTO>.Success(responseDto);
     }
 
-    public async Task<Result<IEnumerable<OfficeResponseDTO>>> GetAllOfficesAsync()
+    public async Task<Result<PagedResult<OfficeResponseDTO>>> GetAllOfficesAsync(PageParams pageParams)
     {
-        var offices = await _officeRepository.GetAllAsync();
+        var pagedOffices = await _officeRepository.GetAllAsync(pageParams);
 
-        var responseList = offices.ToResponseDTOAll();
+        var responseList = pagedOffices.Items.ToResponseDTOAll();
+        var pagedResult = new PagedResult<OfficeResponseDTO>(responseList, pagedOffices.TotalCount);
 
-        return Result<IEnumerable<OfficeResponseDTO>>.Success(responseList);
+        return Result<PagedResult<OfficeResponseDTO>>.Success(pagedResult);
     }
 
     public async Task<Result<OfficeResponseDTO>> UpdateOfficeAsync(Guid id, UpdateOfficeDTO request)
@@ -55,17 +54,10 @@ public class OfficeService : IOfficeService
 
         if (office == null)
             return Result<OfficeResponseDTO>.Failure(OfficeErrors.NotFound);
-
-        office.PhotoPath = request.PhotoPath;
-        office.City = request.City;
-        office.Street = request.Street;
-        office.HouseNumber = request.HouseNumber;
-        office.OfficeNumber = request.OfficeNumber;
-        office.RegistryPhoneNumber = request.RegistryPhoneNumber;
-        office.Status = request.Status;
+        
+        request.UpdateEntity(office);
 
         await _officeRepository.UpdateAsync(office);
-        await _unitOfWork.SaveChangesAsync();
 
         var responseDto = office.ToResponseDTO();
         return Result<OfficeResponseDTO>.Success(responseDto);
@@ -81,8 +73,6 @@ public class OfficeService : IOfficeService
         office.Status = request.Status;
 
         await _officeRepository.UpdateAsync(office);
-
-        await _unitOfWork.SaveChangesAsync();
 
         return Result.Success();
     }

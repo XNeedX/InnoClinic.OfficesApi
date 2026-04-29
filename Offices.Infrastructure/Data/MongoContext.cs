@@ -8,8 +8,6 @@ public class MongoContext
     public MongoClient Client { get; }
     public IMongoDatabase Database { get; }
 
-    public IClientSessionHandle? Session { get; set; }
-
     public MongoContext(IOptions<OfficesDatabaseSettings> settings)
     {
         Client = new MongoClient(settings.Value.ConnectionString);

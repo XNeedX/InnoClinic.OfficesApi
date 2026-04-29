@@ -1,4 +1,6 @@
-﻿namespace Offices.Application.Abstractions;
+﻿using Offices.Application.DTOs.Pagination; 
+
+namespace Offices.Application.Abstractions;
 
 public interface IRepository<T>
 {
@@ -6,5 +8,5 @@ public interface IRepository<T>
     Task<T?> GetByIdAsync(Guid id);
     Task UpdateAsync(T entity);
     Task DeleteAsync(T entity);
-    Task<IEnumerable<T>> GetAllAsync();
+    Task<PagedResult<T>> GetAllAsync(PageParams pageParams);
 }

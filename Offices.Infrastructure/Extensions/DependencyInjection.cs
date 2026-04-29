@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Offices.Application.Abstractions;
 using Offices.Domain.Models;
+using Offices.Infrastructure.Configuration;
 using Offices.Infrastructure.Data;
 using Offices.Infrastructure.Repositories;
 
@@ -13,11 +14,10 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        OfficeConfiguration.Configure();
 
-        services.AddScoped<MongoContext>();
-
+        services.AddSingleton<MongoContext>();
         services.AddScoped<IRepository<Office>, OfficeRepository>();
-        services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         return services;
     }
