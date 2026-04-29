@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="Offices.Application/Offices.Application.csproj" />
+  <Project Path="Offices.Domain/Offices.Domain.csproj" />
+  <Project Path="Offices.Infrastructure/Offices.Infrastructure.csproj" />
+  <Project Path="Offices.Presentation/Offices.Presentation.csproj" />
+</Solution>
