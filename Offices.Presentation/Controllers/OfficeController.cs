@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Offices.Application.Abstractions;
 using Offices.Application.DTOs;
+using Offices.Application.DTOs.Pagination;
 using Offices.Application.Results;
 
 namespace Offices.Presentation.Controllers;
@@ -41,15 +42,10 @@ public class OfficesController : ApiController
         if (result.IsFailure)
             return HandleFailure(result.Error);
 
-        return Ok(new
-        {
-            Message = "Office created successfully",
-            OfficeId = result.Value!.Id,
-            Address = result.Value.FullAddress
-        });
+        return Ok(result.Value);
     }
 
-    [HttpGet("{id:guid}")]
+    [HttpGet("{id:guid}", Name = nameof(GetOfficeByIdAsync))]
     public async Task<IActionResult> GetOfficeByIdAsync(Guid id)
     {
         var result = await _officeService.GetOfficeByIdAsync(id);
@@ -61,9 +57,9 @@ public class OfficesController : ApiController
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAllOfficesAsync()
+    public async Task<IActionResult> GetAllOfficesAsync([FromQuery] PageParams pageParams)
     {
-        var result = await _officeService.GetAllOfficesAsync();
+        var result = await _officeService.GetAllOfficesAsync(pageParams);
 
         if (result.IsFailure)
             return HandleFailure(result.Error);

@@ -1,20 +1,23 @@
-﻿using Offices.Application.Abstractions;
+﻿using InnoClinic.Contracts.Events.Offices;
+using MassTransit;
+using Offices.Application.Abstractions;
 using Offices.Application.DTOs;
+using Offices.Application.DTOs.Pagination;
 using Offices.Application.Mappings;
-using Offices.Domain.Models;
 using Offices.Application.Results;
+using Offices.Domain.Models;
 
 namespace Offices.Application.Services;
 
 public class OfficeService : IOfficeService
 {
     private readonly IRepository<Office> _officeRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IPublishEndpoint _publishEndpoint;
 
-    public OfficeService(IRepository<Office> officeRepository, IUnitOfWork unitOfWork)
+    public OfficeService(IRepository<Office> officeRepository, IPublishEndpoint publishEndpoint)
     {
         _officeRepository = officeRepository;
-        _unitOfWork = unitOfWork;
+        _publishEndpoint = publishEndpoint;
     }
 
     public async Task<Result<OfficeResponseDTO>> CreateOfficeAsync(CreateOfficeDto request)
@@ -23,9 +26,20 @@ public class OfficeService : IOfficeService
         office.Id = Guid.NewGuid();
 
         await _officeRepository.AddAsync(office);
-        await _unitOfWork.SaveChangesAsync();
 
         var responseDto = office.ToResponseDTO();
+
+        await _publishEndpoint.Publish<IOfficeCreatedEvent>(new
+        {
+            PhotoPath = office.PhotoPath,
+            City = office.City,
+            Street = office.Street,
+            HouseNumber = office.HouseNumber,
+            OfficeNumber = office.OfficeNumber,
+            RegistryPhoneNumber = office.RegistryPhoneNumber,
+            Status = (Domain.Models.OfficeStatus)office.Status
+        });
+
         return Result<OfficeResponseDTO>.Success(responseDto);
     }
 
@@ -40,13 +54,14 @@ public class OfficeService : IOfficeService
         return Result<OfficeResponseDTO>.Success(responseDto);
     }
 
-    public async Task<Result<IEnumerable<OfficeResponseDTO>>> GetAllOfficesAsync()
+    public async Task<Result<PagedResult<OfficeResponseDTO>>> GetAllOfficesAsync(PageParams pageParams)
     {
-        var offices = await _officeRepository.GetAllAsync();
+        var pagedOffices = await _officeRepository.GetAllAsync(pageParams);
 
-        var responseList = offices.ToResponseDTOAll();
+        var responseList = pagedOffices.Items.ToResponseDTOAll();
+        var pagedResult = new PagedResult<OfficeResponseDTO>(responseList, pagedOffices.TotalCount);
 
-        return Result<IEnumerable<OfficeResponseDTO>>.Success(responseList);
+        return Result<PagedResult<OfficeResponseDTO>>.Success(pagedResult);
     }
 
     public async Task<Result<OfficeResponseDTO>> UpdateOfficeAsync(Guid id, UpdateOfficeDTO request)
@@ -55,19 +70,25 @@ public class OfficeService : IOfficeService
 
         if (office == null)
             return Result<OfficeResponseDTO>.Failure(OfficeErrors.NotFound);
-
-        office.PhotoPath = request.PhotoPath;
-        office.City = request.City;
-        office.Street = request.Street;
-        office.HouseNumber = request.HouseNumber;
-        office.OfficeNumber = request.OfficeNumber;
-        office.RegistryPhoneNumber = request.RegistryPhoneNumber;
-        office.Status = request.Status;
+        
+        request.UpdateEntity(office);
 
         await _officeRepository.UpdateAsync(office);
-        await _unitOfWork.SaveChangesAsync();
 
         var responseDto = office.ToResponseDTO();
+
+        await _publishEndpoint.Publish<IOfficeUpdatedEvent>(new
+        {
+            Id = office.Id,
+            PhotoPath = office.PhotoPath,
+            City = office.City,
+            Street = office.Street,
+            HouseNumber = office.HouseNumber,
+            OfficeNumber = office.OfficeNumber,
+            RegistryPhoneNumber = office.RegistryPhoneNumber,
+            Status = (Domain.Models.OfficeStatus)office.Status
+        });
+
         return Result<OfficeResponseDTO>.Success(responseDto);
     }
 
@@ -82,7 +103,11 @@ public class OfficeService : IOfficeService
 
         await _officeRepository.UpdateAsync(office);
 
-        await _unitOfWork.SaveChangesAsync();
+        await _publishEndpoint.Publish<IOfficeStatusUpdatedEvent>(new
+        {
+            Id = office.Id,
+            Status = (Domain.Models.OfficeStatus)office.Status
+        });
 
         return Result.Success();
     }

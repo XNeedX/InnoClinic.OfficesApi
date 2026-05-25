@@ -11,5 +11,5 @@ public static partial class OfficeMapper
     public static partial Office ToEntity(this CreateOfficeDto request);
     public static partial OfficeResponseDTO ToResponseDTO(this Office office);
     public static partial IEnumerable<OfficeResponseDTO> ToResponseDTOAll(this IEnumerable<Office> offices);
-    public static partial Office UpdateEntity(this UpdateOfficeDTO request, Office office);
+    public static partial void UpdateEntity(this UpdateOfficeDTO request, Office office);
 }
