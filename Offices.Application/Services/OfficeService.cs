@@ -31,13 +31,15 @@ public class OfficeService : IOfficeService
 
         await _publishEndpoint.Publish<IOfficeCreatedEvent>(new
         {
+            Id = office.Id,
+            Address = office.FullAddress,
             PhotoPath = office.PhotoPath,
             City = office.City,
             Street = office.Street,
             HouseNumber = office.HouseNumber,
             OfficeNumber = office.OfficeNumber,
             RegistryPhoneNumber = office.RegistryPhoneNumber,
-            Status = (Domain.Models.OfficeStatus)office.Status
+            Status = (InnoClinic.Contracts.Enums.OfficeStatus)office.Status
         });
 
         return Result<OfficeResponseDTO>.Success(responseDto);
@@ -86,7 +88,7 @@ public class OfficeService : IOfficeService
             HouseNumber = office.HouseNumber,
             OfficeNumber = office.OfficeNumber,
             RegistryPhoneNumber = office.RegistryPhoneNumber,
-            Status = (Domain.Models.OfficeStatus)office.Status
+            Status = (InnoClinic.Contracts.Enums.OfficeStatus)office.Status
         });
 
         return Result<OfficeResponseDTO>.Success(responseDto);
@@ -106,7 +108,7 @@ public class OfficeService : IOfficeService
         await _publishEndpoint.Publish<IOfficeStatusUpdatedEvent>(new
         {
             Id = office.Id,
-            Status = (Domain.Models.OfficeStatus)office.Status
+            Status = (InnoClinic.Contracts.Enums.OfficeStatus)office.Status
         });
 
         return Result.Success();
