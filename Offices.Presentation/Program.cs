@@ -1,3 +1,4 @@
+using InnoClinic.Profiles.Api.Extensions;
 using Offices.Application;
 using Offices.Infrastructure;
 using Offices.Infrastructure.Data;
@@ -11,6 +12,8 @@ builder.Host.AddSerilogLogging(builder.Configuration);
 builder.Services.Configure<OfficesDatabaseSettings>(builder.Configuration.GetSection("OfficeDatabaseSettings"));
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
+builder.Services.AddKeycloakAuth(builder.Configuration);
+builder.Services.AddSwaggerWithAuth(builder.Configuration);
 
 var app = builder.Build();
 

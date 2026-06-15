@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Offices.Application.Abstractions;
 using Offices.Application.DTOs;
@@ -29,7 +30,7 @@ public class OfficesController : ApiController
     }
 
     [HttpPost]
-    // [Authorize(Roles = "Receptionist")] 
+    [Authorize(Roles = "Receptionist")] 
     public async Task<IActionResult> CreateOffice([FromBody] CreateOfficeDto request)
     {
         var validationResult = await _createValidator.ValidateAsync(request);
@@ -46,6 +47,7 @@ public class OfficesController : ApiController
     }
 
     [HttpGet("{id:guid}", Name = nameof(GetOfficeByIdAsync))]
+    [Authorize(Roles = "Receptionist")]
     public async Task<IActionResult> GetOfficeByIdAsync(Guid id)
     {
         var result = await _officeService.GetOfficeByIdAsync(id);
@@ -57,6 +59,7 @@ public class OfficesController : ApiController
     }
 
     [HttpGet]
+    [Authorize(Roles = "Receptionist")]
     public async Task<IActionResult> GetAllOfficesAsync([FromQuery] PageParams pageParams)
     {
         var result = await _officeService.GetAllOfficesAsync(pageParams);
@@ -68,6 +71,7 @@ public class OfficesController : ApiController
     }
 
     [HttpPut("{id:guid}")]
+    [Authorize(Roles = "Receptionist")]
     public async Task<IActionResult> UpdateOffice(Guid id, [FromBody] UpdateOfficeDTO request)
     {
         var validationResult = await _updateValidator.ValidateAsync(request);
@@ -84,6 +88,7 @@ public class OfficesController : ApiController
     }
 
     [HttpPatch("{id:guid}/status")]
+    [Authorize(Roles = "Receptionist")]
     public async Task<IActionResult> ChangeStatus(Guid id, [FromBody] ChangeOfficeStatusDTO request)
     {
         var validationResult = await _changeStatusValidator.ValidateAsync(request);
