@@ -11,7 +11,13 @@ public static class WebApplicationExtensions
         if (app.Environment.IsDevelopment())
         {
             app.UseSwagger();
-            app.UseSwaggerUI();
+            app.UseSwaggerUI(options =>
+            {
+                options.OAuthAdditionalQueryStringParams(new Dictionary<string, string>
+                {
+                    { "prompt", "login" }
+                });
+            });
         }
 
         app.UseHttpsRedirection();

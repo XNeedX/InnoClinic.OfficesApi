@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/Элементы решения/">
+    <File Path="Dockerfile" />
+  </Folder>
   <Project Path="Offices.Application/Offices.Application.csproj" />
   <Project Path="Offices.Domain/Offices.Domain.csproj" />
   <Project Path="Offices.Infrastructure/Offices.Infrastructure.csproj" />

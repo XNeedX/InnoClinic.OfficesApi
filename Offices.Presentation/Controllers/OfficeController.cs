@@ -86,7 +86,7 @@ public class OfficesController : ApiController
 
         return Ok(result.Value);
     }
-
+    
     [HttpPatch("{id:guid}/status")]
     [Authorize(Roles = "Receptionist")]
     public async Task<IActionResult> ChangeStatus(Guid id, [FromBody] ChangeOfficeStatusDTO request)
