@@ -1,28 +1,45 @@
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-USER app
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS base
 WORKDIR /app
 EXPOSE 8080
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+USER root
+RUN apk add --no-cache icu-libs
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+USER app
+
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
+
+ARG GITHUB_USERNAME
+ARG GITHUB_PASSWORD
+ENV GITHUB_USERNAME=$GITHUB_USERNAME
+ENV GITHUB_PASSWORD=$GITHUB_PASSWORD
+
 WORKDIR /src
 
-COPY ["OfficesAPI.Presentation/OfficesAPI.Presentation.csproj", "OfficesAPI.Presentation/"]
-COPY ["OfficesAPI.Application/OfficesAPI.Application.csproj", "OfficesAPI.Application/"]
-COPY ["OfficesAPI.Infrastructure/OfficesAPI.Infrastructure.csproj", "OfficesAPI.Infrastructure/"]
-COPY ["OfficesAPI.Domain/OfficesAPI.Domain.csproj", "OfficesAPI.Domain/"]
+COPY ["Offices.Presentation/Offices.Presentation.csproj", "Offices.Presentation/"]
+COPY ["Offices.Application/Offices.Application.csproj", "Offices.Application/"]
+COPY ["Offices.Infrastructure/Offices.Infrastructure.csproj", "Offices.Infrastructure/"]
+COPY ["Offices.Domain/Offices.Domain.csproj", "Offices.Domain/"]
+COPY ["nuget.config", "./"]
 
-RUN dotnet restore "./OfficesAPI.Presentation/OfficesAPI.Presentation.csproj"
+RUN dotnet nuget update source "github" \
+    --username "$GITHUB_USERNAME" \
+    --password "$GITHUB_PASSWORD" \
+    --store-password-in-clear-text \
+    --configfile nuget.config
+
+RUN dotnet restore "./Offices.Presentation/Offices.Presentation.csproj"
 
 COPY . .
-WORKDIR "/src/OfficesAPI.Presentation"
-RUN dotnet build "./OfficesAPI.Presentation.csproj" -c $BUILD_CONFIGURATION -o /app/build
+WORKDIR "/src/Offices.Presentation"
+RUN dotnet build "./Offices.Presentation.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./OfficesAPI.Presentation.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./Offices.Presentation.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "OfficesAPI.Presentation.dll"]
+ENTRYPOINT ["dotnet", "Offices.Presentation.dll"]

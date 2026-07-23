@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Offices.Application.Abstractions;
 using Offices.Application.DTOs;
 using Offices.Application.DTOs.Pagination;
-using Offices.Application.Results;
 
 namespace Offices.Presentation.Controllers;
 
@@ -47,7 +46,7 @@ public class OfficesController : ApiController
     }
 
     [HttpGet("{id:guid}", Name = nameof(GetOfficeByIdAsync))]
-    [Authorize(Roles = "Receptionist")]
+    [Authorize(Roles = "Patient, Receptionist")]
     public async Task<IActionResult> GetOfficeByIdAsync(Guid id)
     {
         var result = await _officeService.GetOfficeByIdAsync(id);
@@ -59,7 +58,7 @@ public class OfficesController : ApiController
     }
 
     [HttpGet]
-    [Authorize(Roles = "Receptionist")]
+    [Authorize(Roles = "Patient, Receptionist")]
     public async Task<IActionResult> GetAllOfficesAsync([FromQuery] PageParams pageParams)
     {
         var result = await _officeService.GetAllOfficesAsync(pageParams);

@@ -35,12 +35,19 @@ public static class AuthExtensions
                         return Task.CompletedTask;
                     }
                 };
+                options.Authority = "http://localhost:8080/realms/InnoClinic";
                 options.RequireHttpsMetadata = false; 
                 options.Audience = configuration["Authentication:Audience"];
                 options.MetadataAddress = configuration["Authentication:MetadataAddress"]!;
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidIssuer = configuration["Authentication:ValidIssuer"]
+                };
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateAudience = true,
+                    ValidAudiences = new[] { "expected_office_audience", "account" },
+                    ValidIssuer = "http://localhost:8080/realms/InnoClinic"
                 };
             });
 
